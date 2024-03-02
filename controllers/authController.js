@@ -8,7 +8,6 @@ const User = require('../models/userModel');
 // @access  Public
 exports.register = async (req, res) => {
   const { username, email, password } = req.body;
-
   try {
     let user = await User.findOne({ email });
 
@@ -35,7 +34,7 @@ exports.register = async (req, res) => {
 
     jwt.sign(
       payload,
-      config.get('jwtSecret'),
+      config.JWT_SECRET,
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
@@ -75,7 +74,7 @@ exports.login = async (req, res) => {
 
     jwt.sign(
       payload,
-      config.get('jwtSecret'),
+      config.JWT_SECRET,
       { expiresIn: 3600 },
       (err, token) => {
         if (err) throw err;
