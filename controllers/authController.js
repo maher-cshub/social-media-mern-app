@@ -2,28 +2,50 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const config = require('../config/config');
 const User = require('../models/userModel');
-
+const fs = require("fs")
 // @desc    Register user
 // @route   POST /api/auth/register
 // @access  Public
-exports.register = async (req, res) => {
-  const { username, email, password } = req.body;
+exports.register = async (req, res,next) => {
+  const formidable = require("formidable")
+  let form = new formidable.IncomingForm({   "keepExtensions": true, "allowEmptyFiles": true, "minFileSize": 0})
+  let [fields,files] = await form.parse(req)
+  let { username, email, password } = fields;
+  username = username[0]
+  email = email[0]
+  password = password[0]
   try {
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ username: true, email:false });
 
     if (user) {
-      return res.status(400).json({ msg: 'User already exists' });
+      return res.status(400).json({ msg: 'User already exists (username or email already used before!)' });
     }
 
+    let filesize = files["file"][0]["size"]
+    let newname = "default_profile_male_user.svg"
+
+    if (filesize > 0){
+      //upload the file
+      let exct = files["file"][0]["newFilename"].split(".")[1]
+      newname = `${username}_profile.${exct}`
+      fs.copyFile(files["file"][0]["filepath"],`./uploads/${newname}`,(err)=>{
+        console.log(err)
+      })
+    }
+
+
+    // user added 
     user = new User({
       username,
       email,
-      password
+      password,
+      profilePicture:newname
     });
-
+    
+    req.payload = username
+    
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(password, salt);
-
     await user.save();
 
     const payload = {
@@ -41,6 +63,7 @@ exports.register = async (req, res) => {
         res.json({ token });
       }
     );
+
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');

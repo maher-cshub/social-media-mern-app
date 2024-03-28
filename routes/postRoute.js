@@ -18,6 +18,7 @@ router.get('/all', postController.getAllPosts);
 // @access  Private
 router.put('/:id', auth, postController.updatePost);
 
+
 // @route   DELETE /api/post/:id
 // @desc    Delete a post
 // @access  Private
