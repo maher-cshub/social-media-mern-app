@@ -1,4 +1,4 @@
 node_modules
 config
-uploads/users/*
-uploads/maher_profile.svg
+./uploads/users/*
+./uploads/maher_profile.svg
